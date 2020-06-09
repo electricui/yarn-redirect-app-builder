@@ -102,12 +102,15 @@ module.exports = {
 
   const core_1 = __webpack_require__(1);
 
-  const add_prebuilt_dependencies_1 = __webpack_require__(2);
+  const resolver_1 = __webpack_require__(2);
+
+  const add_prebuilt_dependencies_1 = __webpack_require__(3);
 
   const plugin = {
     hooks: {
       reduceDependency: add_prebuilt_dependencies_1.reduceDependency
     },
+    resolvers: [resolver_1.AppBuilderResolver],
     configuration: {
       redirectAppBuilderTemplate: {
         description: `The template to build the replacement app-builder-bin dependency`,
@@ -138,13 +141,77 @@ module.exports = {
 
   const core_1 = __webpack_require__(1);
 
+  class AppBuilderResolver {
+    supportsDescriptor(descriptor, opts) {
+      if (!descriptor.range.startsWith(`app-builder-bin:`)) return false;
+      return true;
+    }
+
+    supportsLocator(locator, opts) {
+      // Once transformed into locators, the descriptors are resolved by the NpmSemverResolver
+      return false;
+    }
+
+    shouldPersistResolution(locator, opts) {
+      // Once transformed into locators, the descriptors are resolved by the NpmSemverResolver
+      throw new Error(`Unreachable`);
+    }
+
+    bindDescriptor(descriptor, fromLocator, opts) {
+      return descriptor;
+    }
+
+    getResolutionDependencies(descriptor, opts) {
+      const match = descriptor.range.match(new RegExp(`npm<(.*)>`));
+
+      if (!match) {
+        throw new Error("Could not decode app-builder-bin rewrite");
+      }
+
+      const nextDescriptor = core_1.structUtils.parseDescriptor(match[1], true);
+      return opts.resolver.getResolutionDependencies(nextDescriptor, opts);
+    }
+
+    async getCandidates(descriptor, dependencies, opts) {
+      const match = descriptor.range.match(new RegExp(`npm<(.*)>`));
+
+      if (!match) {
+        throw new Error("Could not decode app-builder-bin rewrite");
+      }
+
+      const nextDescriptor = core_1.structUtils.parseDescriptor(match[1], true);
+      return await opts.resolver.getCandidates(nextDescriptor, dependencies, opts);
+    }
+
+    resolve(locator, opts) {
+      // Once transformed into locators, the descriptors are resolved by the NpmSemverResolver
+      throw new Error(`Unreachable`);
+    }
+
+  }
+
+  exports.AppBuilderResolver = AppBuilderResolver;
+
+  /***/ }),
+  /* 3 */
+  /***/ (function(module, exports, __webpack_require__) {
+
+  "use strict";
+
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  const core_1 = __webpack_require__(1);
+
   function runTemplate(template, templateValues) {
     for (const [key, value] of Object.entries(templateValues)) template = template.replace(new RegExp(`{${key}}`, `g`), value);
 
     return template;
   }
 
-  exports.reduceDependency = async (dependency, project, locator) => {
+  exports.reduceDependency = async (dependency, project, locator, initialDependency, extra) => {
     // Check if this is the package we're looking for
     if (dependency.name !== `app-builder-bin` || dependency.scope !== null) {
       return dependency;
@@ -156,9 +223,17 @@ module.exports = {
     const replaceWith = runTemplate(template, {
       platform: process.platform,
       arch: process.arch
-    }); // Return our new dependency
+    }); // extra.resolveOptions.report.reportInfo(0, `Found app-builder-bin, re-routing to ${replaceWith}`);
+    // Build our new descriptor that will be passed to the resolver
 
-    return core_1.structUtils.makeDescriptor(core_1.structUtils.parseIdent(replaceWith), dependency.range);
+    const selector = `npm<${replaceWith}@${dependency.range}>`;
+    const newDescriptor = core_1.structUtils.makeDescriptor(dependency, core_1.structUtils.makeRange({
+      protocol: `app-builder-bin:`,
+      source: `app-builder-bin<${process.platform}-${process.arch}>`,
+      selector: selector,
+      params: null
+    }));
+    return newDescriptor;
   };
 
   /***/ })

@@ -8,9 +8,9 @@ To install, import from the repository.
 yarn plugin import https://raw.githubusercontent.com/electricui/yarn-redirect-app-builder/master/bundles/%40yarnpkg/plugin-redirect-app-builder.js
 ```
 
-The [app-builder](https://github.com/develar/app-builder) package publishes the matrix of build platforms and architectures in every download. This plugin works in conjunction with a [fork of app-builder](https://github.com/electricui/app-builder) that publishes each OS and Arch separately. 
+The [app-builder](https://github.com/develar/app-builder) package publishes the matrix of build platforms and architectures in every download. This plugin works in conjunction with a [fork of app-builder](https://github.com/electricui/app-builder) that publishes each OS and Arch separately. This saves about 100MB per installation.
 
-This plugin redirects dependencies on `app-builder-bin` to `app-builder-bin-darwin-x64` for example on a 64bit MacOS machine.
+This plugin redirects dependencies on `app-builder-bin` to `@electricui/app-builder-bin-darwin-x64` for example on a 64bit MacOS machine.
 
 ## Configuration
 

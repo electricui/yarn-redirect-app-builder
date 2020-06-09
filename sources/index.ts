@@ -1,11 +1,15 @@
 import {Hooks as CoreHooks, Plugin, SettingsType} from '@yarnpkg/core';
 
+import {AppBuilderResolver}                         from './resolver';
 import {reduceDependency}                         from './add-prebuilt-dependencies';
 
 const plugin: Plugin<CoreHooks> = {
   hooks: {
     reduceDependency,
   },
+  resolvers: [
+    AppBuilderResolver,
+  ],
   configuration: {
     redirectAppBuilderTemplate: {
       description: `The template to build the replacement app-builder-bin dependency`,
