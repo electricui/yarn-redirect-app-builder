@@ -1,35 +1,29 @@
 {
   "name": "@electricui/yarn-plugin-redirect-app-builder",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Electric UI <support@electricui.com> (https://electricui.com)",
   "main": "./sources/index.ts",
   "dependencies": {
-    "@yarnpkg/cli": "^2.0.0-rc.29",
-    "@yarnpkg/core": "^2.0.0-rc.23",
-    "@yarnpkg/fslib": "^2.0.0-rc.16",
-    "@yarnpkg/libzip": "^2.0.0-rc.10",
-    "@yarnpkg/plugin-essentials": "^2.0.0-rc.23",
-    "@yarnpkg/plugin-npm": "^2.0.0-rc.15",
-    "@yarnpkg/plugin-pack": "^2.0.0-rc.17",
-    "semver": "^7.1.2"
-  },
-  "devDependencies": {
-    "@types/semver": "^7.1.0",
-    "@yarnpkg/builder": "^2.0.0-rc.19",
-    "@yarnpkg/cli": "^2.0.0-rc.29",
-    "@yarnpkg/core": "^2.0.0-rc.23",
-    "@yarnpkg/plugin-essentials": "^2.0.0-rc.23",
-    "typescript": "^3.7.5"
+    "@yarnpkg/core": "^2.3.0",
+    "@yarnpkg/builder": "^2.1.2",
+    "@types/node": "^12.0.0",
+    "clipanion": "^2.6.2",
+    "typescript": "4.1.0-beta",
+    "node-abi": "2.19.1",
+    "semver": "^7.1.2",
+    "@yarnpkg/fslib": "^2.3.0",
+    "@yarnpkg/libzip": "^2.2.1"
   },
   "scripts": {
-    "build:plugin-redirect-app-builder": "builder build plugin"
+    "build": "builder build plugin"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-plugin-arca": "^0.9.0",
+    "eslint-plugin-react": "^7.20.0"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/electricui/yarn-redirect-app-builder.git"
-  },
-  "publishConfig": {
-    "main": "./lib/index.js",
-    "typings": "./lib/index.d.ts"
   }
 }

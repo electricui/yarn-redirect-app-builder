@@ -1,55 +1,74 @@
-import {Descriptor, DescriptorHash, Locator, MinimalResolveOptions, Package, ResolveOptions, Resolver} from '@yarnpkg/core';
-
-import {structUtils}                                                                                   from '@yarnpkg/core';
+import {
+  Descriptor,
+  DescriptorHash,
+  LinkType,
+  Locator,
+  MinimalResolveOptions,
+  Package,
+  ResolveOptions,
+  Resolver,
+  structUtils,
+} from '@yarnpkg/core'
 
 export class AppBuilderResolver implements Resolver {
   supportsDescriptor(descriptor: Descriptor, opts: MinimalResolveOptions) {
-    if (!descriptor.range.startsWith(`app-builder-bin:`))
-      return false;
+    if (!descriptor.range.startsWith(`appbuilder:`)) return false
 
-    return true;
+    return true
   }
 
   supportsLocator(locator: Locator, opts: MinimalResolveOptions) {
-    // Once transformed into locators, the descriptors are resolved by the NpmSemverResolver
-    return false;
+    if (!locator.reference.startsWith(`appbuilder:`)) return false
+
+    return true
   }
 
-  shouldPersistResolution(locator: Locator, opts: MinimalResolveOptions): never {
-    // Once transformed into locators, the descriptors are resolved by the NpmSemverResolver
-    throw new Error(`Unreachable`);
+  shouldPersistResolution(locator: Locator, opts: MinimalResolveOptions) {
+    return false
   }
 
   bindDescriptor(descriptor: Descriptor, fromLocator: Locator, opts: MinimalResolveOptions) {
-    return descriptor;
+    return descriptor
   }
 
   getResolutionDependencies(descriptor: Descriptor, opts: MinimalResolveOptions) {
-    const match = descriptor.range.match(new RegExp(`npm<(.*)>`));
-
-    if (!match) {
-        throw new Error("Could not decode app-builder-bin rewrite")
-    }
-    
-    const nextDescriptor = structUtils.parseDescriptor(match[1], true);
-
-    return opts.resolver.getResolutionDependencies(nextDescriptor, opts);
+    return []
   }
 
   async getCandidates(descriptor: Descriptor, dependencies: Map<DescriptorHash, Package>, opts: ResolveOptions) {
-    const match = descriptor.range.match(new RegExp(`npm<(.*)>`));
+    if (!opts.fetchOptions)
+      throw new Error(`Assertion failed: This resolver cannot be used unless a fetcher is configured`)
 
-    if (!match) {
-        throw new Error("Could not decode app-builder-bin rewrite")
-    }
-
-    const nextDescriptor = structUtils.parseDescriptor(match[1], true);
-    
-    return await opts.resolver.getCandidates(nextDescriptor, dependencies, opts);
+    return [structUtils.makeLocator(descriptor, descriptor.range)]
   }
 
-  resolve(locator: Locator, opts: ResolveOptions): never {
-    // Once transformed into locators, the descriptors are resolved by the NpmSemverResolver
-    throw new Error(`Unreachable`);
+  async getSatisfying(descriptor: Descriptor, references: Array<string>, opts: ResolveOptions) {
+    return null
+  }
+
+  async resolve(locator: Locator, opts: ResolveOptions): Promise<Package> {
+    // We need to extract the version from the locator
+    const match = locator.reference.match(new RegExp(`appbuilder<(.*)>`))
+
+    if (!match) {
+      throw new Error('Could not decode app-builder-bin version')
+    }
+
+    return {
+      ...locator,
+
+      version: match[1],
+
+      languageName: opts.project.configuration.get(`defaultLanguageName`),
+      linkType: LinkType.HARD,
+
+      dependencies: new Map(),
+      peerDependencies: new Map(),
+
+      dependenciesMeta: new Map(),
+      peerDependenciesMeta: new Map(),
+
+      bin: new Map(),
+    }
   }
 }

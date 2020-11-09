@@ -1,23 +1,32 @@
-import {Hooks as CoreHooks, Plugin, SettingsType} from '@yarnpkg/core';
+import { Plugin, SettingsType } from '@yarnpkg/core'
 
-import {AppBuilderResolver}                         from './resolver';
-import {reduceDependency}                         from './add-prebuilt-dependencies';
+import { AppBuilderFetcher } from './fetcher'
+import { AppBuilderResolver } from './resolver'
+import { afterAllInstalled } from './afterAllInstalled'
+import { reduceDependency } from './reduceDependency'
+import { registerPackageExtensions } from './registerPackageExtensions'
 
-const plugin: Plugin<CoreHooks> = {
+declare module '@yarnpkg/core' {
+  interface ConfigurationValueMap {
+    redirectAppBuilderTemplate: string
+  }
+}
+
+const plugin: Plugin = {
+  fetchers: [AppBuilderFetcher],
+  resolvers: [AppBuilderResolver],
   hooks: {
+    afterAllInstalled,
+    registerPackageExtensions,
     reduceDependency,
   },
-  resolvers: [
-    AppBuilderResolver,
-  ],
   configuration: {
     redirectAppBuilderTemplate: {
       description: `The template to build the replacement app-builder-bin dependency`,
-      type: SettingsType.STRING,
+      type: SettingsType.STRING as const,
       default: `@electricui/app-builder-bin-{platform}-{arch}`,
     },
   },
-};
+}
 
-// eslint-disable-next-line arca/no-default-export
-export default plugin;
+export default plugin
