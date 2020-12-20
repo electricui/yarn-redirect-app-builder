@@ -23,6 +23,8 @@ function runTemplate(template: string, templateValues: { [key: string]: string }
   return template
 }
 
+const cacheVersion = `1`
+
 export async function mutatePackage(pkg: Package, project: Project, opts: InstallOptions) {
   const { packageLocation, packageFs } = await initializePackageEnvironment(pkg, project)
 
@@ -35,10 +37,9 @@ export async function mutatePackage(pkg: Package, project: Project, opts: Instal
     arch: process.arch,
   })
 
-  const cacheHashEntropy = `${packageToFetch}-${pkg.version}-${process.platform}-${normalisedArch()}`.replace(
-    /\//g,
-    '-',
-  )
+  const cacheHashEntropy = `${cacheVersion}/${packageToFetch}-${pkg.version}-${
+    process.platform
+  }-${normalisedArch()}`.replace(/\//g, '-')
 
   // opts.report.reportInfo(MessageName.UNNAMED, `Fetching ${packageToFetch} at version ${pkg.version}`)
 
@@ -125,6 +126,11 @@ export async function mutatePackage(pkg: Package, project: Project, opts: Instal
 
         // Copy it to the new location
         await packageFs.writeFilePromise(newPath, fileContents)
+
+        // If it's in the bin folder, make it executable
+        if (ppath.basename(ppath.dirname(newPath)) === `bin`) {
+          await packageFs.chmodPromise(newPath, 0o755)
+        }
       },
       cancellationSignal,
     )
