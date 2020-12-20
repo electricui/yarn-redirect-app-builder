@@ -15,6 +15,7 @@ import { InstallOptions } from '@yarnpkg/core/lib/Project'
 import { PassThrough } from 'stream'
 import { getLibzipPromise } from '@yarnpkg/libzip'
 import { ppath } from '@yarnpkg/fslib'
+import { constants as fsConstants } from 'fs'
 
 function runTemplate(template: string, templateValues: { [key: string]: string }) {
   for (const [key, value] of Object.entries(templateValues))
@@ -24,6 +25,55 @@ function runTemplate(template: string, templateValues: { [key: string]: string }
 }
 
 const cacheVersion = `1`
+
+async function cacheMatch(
+  packageFs: CwdFS,
+  cacheKeyLocation: PortablePath,
+  packageLocation: PortablePath,
+  cacheHashEntropy: string,
+) {
+  if (await packageFs.existsPromise(cacheKeyLocation)) {
+    const cacheKey = (await packageFs.readFilePromise(cacheKeyLocation)).toString()
+
+    // Check the executable exists and it has executable file permissions.
+    // Sanity check that the executable exists
+    const executableLocation = ppath.join(
+      packageLocation,
+      `bin` as Filename,
+      (process.platform === `win32` ? `app-builder.exe` : `app-builder`) as Filename,
+    )
+
+    // No executable means the cache is dirty
+    if (!(await packageFs.existsPromise(executableLocation))) {
+      return false
+    }
+
+    // Check if the executable is executable
+    let canExecute = false
+
+    await packageFs
+      .accessPromise(executableLocation, fsConstants.X_OK)
+      .then(() => {
+        canExecute = true
+      })
+      .catch(err => {
+        canExecute = false
+      })
+
+    // If the executable isn't executable, rebuild it
+    if (!canExecute) {
+      return false
+    }
+
+    if (cacheKey === cacheHashEntropy) {
+      // Everything seems to match, we're good.
+      return true
+    }
+  }
+
+  // There wasn't even a cache file, it's dirty.
+  return false
+}
 
 export async function mutatePackage(pkg: Package, project: Project, opts: InstallOptions) {
   const { packageLocation, packageFs } = await initializePackageEnvironment(pkg, project)
@@ -45,14 +95,10 @@ export async function mutatePackage(pkg: Package, project: Project, opts: Instal
 
   // Check if the cache key exists / matches
   const cacheKeyLocation = ppath.join(packageLocation, `.cache_key` as Filename)
-  if (await packageFs.existsPromise(cacheKeyLocation)) {
-    const cacheKey = (await packageFs.readFilePromise(cacheKeyLocation)).toString()
 
-    if (cacheKey === cacheHashEntropy) {
-      // We've already done this, we can skip it.
-      opts.report.reportInfo(MessageName.UNNAMED, `${packageToFetch} cache keys match, skipping installation`)
-      return
-    }
+  if (await cacheMatch(packageFs, cacheKeyLocation, packageLocation, cacheHashEntropy)) {
+    opts.report.reportInfo(MessageName.UNNAMED, `${packageToFetch} cache keys match, skipping installation`)
+    return
   }
 
   const replacementLocator = structUtils.makeLocator(
