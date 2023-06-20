@@ -1,4 +1,4 @@
-import { CwdFS, Filename, PortablePath, ZipOpenFS } from '@yarnpkg/fslib'
+import { CwdFS, Filename, PortablePath } from '@yarnpkg/fslib'
 import {
   FetchResult,
   Locator,
@@ -10,6 +10,7 @@ import {
   structUtils,
 } from '@yarnpkg/core'
 import { normalisedArch, walk } from './utils'
+import { ZipOpenFS } from '@yarnpkg/libzip'
 
 import { InstallOptions } from '@yarnpkg/core/lib/Project'
 import { PassThrough } from 'stream'
@@ -79,7 +80,7 @@ export async function mutatePackage(pkg: Package, project: Project, opts: Instal
   const { packageLocation, packageFs } = await initializePackageEnvironment(pkg, project)
 
   // Find our template string
-  const template = project.configuration.get<string>(`redirectAppBuilderTemplate`)
+  const template = project.configuration.get(`redirectAppBuilderTemplate`)
 
   // Run our template
   const packageToFetch = runTemplate(template, {

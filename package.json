@@ -1,17 +1,17 @@
 {
   "name": "@electricui/yarn-plugin-redirect-app-builder",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "author": "Electric UI <support@electricui.com> (https://electricui.com)",
   "main": "./sources/index.ts",
   "dependencies": {
-    "@yarnpkg/core": "^2.4.0",
-    "@yarnpkg/builder": "^2.1.3",
-    "@types/node": "^14.14.14",
     "clipanion": "^2.6.2",
-    "typescript": "4.1.3",
     "semver": "^7.3.4",
-    "@yarnpkg/fslib": "^2.4.0",
-    "@yarnpkg/libzip": "^2.2.1"
+    "@types/node": "^18.0.0",
+    "@yarnpkg/builder": "^4.0.0-rc.45",
+    "@yarnpkg/core": "^4.0.0-rc.45",
+    "@yarnpkg/fslib": "^3.0.0-rc.45",
+    "@yarnpkg/libzip": "^3.0.0-rc.45",
+    "typescript": "5.1.3"
   },
   "scripts": {
     "build": "builder build plugin"
