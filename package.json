@@ -7,10 +7,10 @@
     "clipanion": "^2.6.2",
     "semver": "^7.3.4",
     "@types/node": "^18.0.0",
-    "@yarnpkg/builder": "^4.0.0-rc.45",
-    "@yarnpkg/core": "^4.0.0-rc.45",
-    "@yarnpkg/fslib": "^3.0.0-rc.45",
-    "@yarnpkg/libzip": "^3.0.0-rc.45",
+    "@yarnpkg/builder": "^4.0.0",
+    "@yarnpkg/core": "^4.0.2",
+    "@yarnpkg/fslib": "^3.0.1",
+    "@yarnpkg/libzip": "^3.0.0",
     "typescript": "5.1.3"
   },
   "scripts": {
