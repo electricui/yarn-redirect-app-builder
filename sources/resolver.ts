@@ -39,16 +39,21 @@ export class AppBuilderResolver implements Resolver {
     if (!opts.fetchOptions)
       throw new Error(`Assertion failed: This resolver cannot be used unless a fetcher is configured`)
 
-    return [structUtils.makeLocator(structUtils.parseIdent(`bindings`), descriptor.range)]
+    return [structUtils.makeLocator(structUtils.parseIdent(`app-builder-bin`), descriptor.range)]
   }
 
-  async getSatisfying(descriptor: Descriptor, dependencies: Record<string, Package>, locators: Array<Locator>, opts: ResolveOptions) {
-    const [locator] = await this.getCandidates(descriptor, dependencies, opts);
+  async getSatisfying(
+    descriptor: Descriptor,
+    dependencies: Record<string, Package>,
+    locators: Array<Locator>,
+    opts: ResolveOptions,
+  ) {
+    const [locator] = await this.getCandidates(descriptor, dependencies, opts)
 
     return {
       locators: locators.filter(candidate => candidate.locatorHash === locator.locatorHash),
       sorted: false,
-    };
+    }
   }
 
   async resolve(locator: Locator, opts: ResolveOptions): Promise<Package> {

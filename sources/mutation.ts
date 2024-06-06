@@ -3,6 +3,7 @@ import {
   FetchResult,
   Locator,
   MessageName,
+  MultiFetcher,
   Package,
   Project,
   StreamReport,
@@ -78,6 +79,11 @@ async function cacheMatch(
 
 export async function mutatePackage(pkg: Package, project: Project, opts: InstallOptions) {
   const { packageLocation, packageFs } = await initializePackageEnvironment(pkg, project)
+
+  // console.log(`pkg.version: ${pkg.version} -> ${pkg.version.replace('npm%3A', '')}`)
+
+  // Strip out everything but the naked version number
+  pkg.version = pkg.version.replace('npm%3A', '')
 
   // Find our template string
   const template = project.configuration.get(`redirectAppBuilderTemplate`)
